@@ -10,7 +10,7 @@
           <div class="flex space-x-4 text-negro-primario ml-auto"> 
             <NuxtLink
               to="/asesor/captacion"
-              class="flex items-center space-x-2 px-8 py-4 rounded-[30px] font-bold shadow-md transition-all duration-200"
+              class="flex items-center space-x-2 px-6 py-3 rounded-full font-bold shadow-md transition-all duration-200"
               :class="[$route.path.includes('/asesor/captacion') ? 'bg-dorado-terciario text-negro-primario shadow-lg' : 'bg-white text-negro-primario shadow-md']"
             >
               <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -20,7 +20,7 @@
             </NuxtLink>
             <NuxtLink
               to="/asesor/ventas"
-              class="flex items-center space-x-2 px-8 py-4 rounded-[30px] font-bold shadow-md transition-all duration-200"
+              class="flex items-center space-x-2 px-6 py-3 rounded-full font-bold shadow-md transition-all duration-200"
               
               :class="[$route.path.includes('/asesor/ventas') ? 'bg-dorado-terciario text-negro-primario shadow-lg' : 'bg-white text-negro-primario shadow-md']"
             >
@@ -31,7 +31,7 @@
             </NuxtLink>
           </div>
           
-          <div class="flex ml-3 items-center bg-blanco-primario rounded-[30px] p-3">
+          <div class="flex ml-3 items-center bg-blanco-primario rounded-4xl p-4">
             <div
               class="flex items-center justify-center w-10 h-10 rounded-full bg-negro-primario text-white font-semibold mr-3"
             >

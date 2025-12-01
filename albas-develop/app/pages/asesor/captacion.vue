@@ -1,19 +1,76 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
+/*---------------------------------------importaciones--------------------------------*/
 
+//Import Tablas
+import TablaLead from "~/pages/asesor/captacion/TablaLead.vue";
+import TablaCitas from "~/pages/asesor/captacion/TablaCitas.vue";
+import TablaClientes from "~/pages/asesor/captacion/TablaClientes.vue";
+
+import NuevoLeadForm from "~/components/asesor/NuevoLeadForm.vue"; //Formulario para agregar Nuevo Lead de Captacion
+//import leads-tabla-formularios
+
+import PropiedadForm from "~/components/asesor/PropiedadForm.vue"; //Formulario para agregar Propiedad-tablaLeads
+import EditarPropiedadForm from "~/components/asesor/EditarPropiedadForm.vue"; //Formulario para editar propiedad-tablaLeads
+import VerPropiedadForm from "~/components/asesor/VerPropiedadForm.vue"; //Formulario para ver propiedad-tablaLeads
+import VisitaForm from "~/components/asesor/VisitaForm.vue"; //Formulario para agregar Visitas-tablaLeads
+import EditarVisitaForm from "~/components/asesor/EditarVisitaForm.vue"; //Formulario para editar visita-tablaLeads
+import VerVisitaForm from "~/components/asesor/VerVisitaForm.vue"; //Formulario para ver visita-tablaLeads
+import ObservacionForm from "~/components/asesor/NuevoLeadForm.vue"; //Formulario para agregar Observaciones-tablaLeads
+import EditarObservacionForm from "~/components/asesor/NuevoLeadForm.vue"; //Formulario para editar observacion-tablaLeads
+import VerObservacionForm from "~/components/asesor/NuevoLeadForm.vue"; //Formulario para ver observacion-tablaLeads
+import EditarLeadForm from "~/components/asesor/NuevoLeadForm.vue"; //Formulario para editarLead-tablaLeads
+
+//import citas-tabla-formularios
+
+import VisitasForm from "~/components/asesor/NuevoLeadForm.vue"; //Formulario para agregarVisitas-tablaCitas
+import EditarVisitasForm from "~/components/asesor/NuevoLeadForm.vue"; //Formulario para editarVisitas-tablaCitas
+import VerVisitaAgendadaForm from "~/components/asesor/NuevoLeadForm.vue"; //Formulario para VerVisitas-tablaCitas
+import GastosForm from "~/components/asesor/GastosForm.vue"; //Formulario para AgregarGastos-tablaCitas
+import EditarGastosForm from "~/components/asesor/NuevoLeadForm.vue"; //Formulario para EditarGastos-tablaCitas
+import VerGastosForm from "~/components/asesor/NuevoLeadForm.vue"; //Formulario para VerGastos-tablaCitas
+import ObservacionGastosForm from "~/components/asesor/NuevoLeadForm.vue"; //Formulario para agregarObservacion-tablaCitas
+import EditarObservacionGastosForm from "~/components/asesor/NuevoLeadForm.vue"; //Formulario para EditarObservacion-tablaCitas
+import VerObservacionGastosForm from "~/components/asesor/NuevoLeadForm.vue"; //Formulario para VerObservacion-tablaCitas
+import EditarLeadCitaForm from "~/components/asesor/NuevoLeadForm.vue"; //Formulario para EditarLeadCita-tablaCitas
+
+//import Clientes-tabla-formularios
+import VerHistorialForm from "~/components/asesor/NuevoLeadForm.vue";
+import VerTerrenosForm from "~/components/asesor/NuevoLeadForm.vue";
+import SubirContratoForm from "~/components/asesor/NuevoLeadForm.vue";
+import VerComentariosForm from "~/components/asesor/NuevoLeadForm.vue";
+import EditarLeadClienteForm from "~/components/asesor/NuevoLeadForm.vue";
+
+// Uso de diseño asesor
 definePageMeta({
   layout: "asesor",
 });
 
-// Tabs
+// =============================================================================
+// 1. BASE DE DATOS SIMULADA (ARREGLOS)
+// =============================================================================
+// Aquí se guardarán los datos mientras la página esté abierta
+const dbPropiedades = ref<any[]>([]);
+const dbVisitas = ref<any[]>([]);
+const dbObservaciones = ref<any[]>([]);
+
+// Variables para pasar el dato específico a los modales
+const selectedPropiedad = ref<any>(null);
+const selectedVisita = ref<any>(null);
+// Lista filtrada para cuando un lead tiene varias propiedades
+const propiedadesDelLead = ref<any[]>([]);
+const visitasDelLead = ref<any[]>([]);
+
+// Tabs actual,(Leads, Citas, Clientes)
 const currentTab = ref("Leads");
 const setTab = (tab: string) => (currentTab.value = tab);
 
-// Modal Lead
-const showModal = ref(false);
+//Modal agregar Nuevo Lead
+const showNuevoLeadForm = ref(false);
 
-// Formularios individuales nuevos Leads tabla leads
+//---------------------------------------------------MOSTRAR MODAL LEADS--------------------------------------------------------------------
+
 const showPropiedadForm = ref(false);
 const showEditarPropiedadForm = ref(false);
 const showVerPropiedadForm = ref(false);
@@ -28,60 +85,235 @@ const showVerObservacionForm = ref(false);
 
 const showEditarLeadForm = ref(false);
 
+//Selector Leads
 const selectedLead = ref<any>(null);
 
-// Abrir formularios TABLA LEADS
+// =============================================================================
+// LÓGICA DE PROPIEDADES (MODIFICADA PARA USAR BD SIMULADA)
+// =============================================================================
+
+// Abrir Modal Agregar
 const abrirPropiedadForm = (lead: any) => {
   selectedLead.value = lead;
   showPropiedadForm.value = true;
 };
+
+// Guardar Nueva Propiedad
+const guardarPropiedadBD = (datos: any) => {
+  const nuevaPropiedad = { id: Date.now(), ...datos };
+  dbPropiedades.value.push(nuevaPropiedad);
+  console.log("Propiedad Guardada:", dbPropiedades.value);
+  showPropiedadForm.value = false;
+};
+
+// Abrir Modal Editar (Busca si existe)
+const abrirEditarPropiedadForm = (lead: any) => {
+  selectedLead.value = lead;
+  // Buscamos todas las propiedades de este lead
+  const propsDelLead = dbPropiedades.value.filter((p) => p.leadId === lead.id);
+
+  if (propsDelLead.length > 0) {
+    propiedadesDelLead.value = propsDelLead; // Guardamos la lista para el select
+    selectedPropiedad.value = propsDelLead[0]; // Seleccionamos la primera
+    showEditarPropiedadForm.value = true;
+  } else {
+    alert("Primero debes AGREGAR una propiedad a este lead.");
+  }
+};
+
+// Actualizar Propiedad
+const actualizarPropiedadBD = (datos: any) => {
+  const index = dbPropiedades.value.findIndex((p) => p.id === datos.id);
+  if (index !== -1) {
+    dbPropiedades.value[index] = datos;
+  }
+  showEditarPropiedadForm.value = false;
+};
+
+// Abrir Modal Ver
+const abrirVerPropiedadForm = (lead: any) => {
+  selectedLead.value = lead;
+  const propsDelLead = dbPropiedades.value.filter((p) => p.leadId === lead.id);
+
+  if (propsDelLead.length > 0) {
+    propiedadesDelLead.value = propsDelLead;
+    selectedPropiedad.value = propsDelLead[0];
+    showVerPropiedadForm.value = true;
+  } else {
+    alert("No hay propiedad registrada para ver.");
+  }
+};
+
+// =============================================================================
+// LÓGICA DE VISITAS (MODIFICADA PARA USAR BD SIMULADA)
+// =============================================================================
 
 const abrirVisitaForm = (lead: any) => {
   selectedLead.value = lead;
   showVisitaForm.value = true;
 };
 
-const abrirObservacionForm = (lead: any) => {
-  selectedLead.value = lead;
-  showObservacionForm.value = true;
-};
-
-const abrirEditarPropiedadForm = (lead: any) => {
-  selectedLead.value = lead;
-  showEditarPropiedadForm.value = true;
-};
-
-const abrirVerPropiedadForm = (lead: any) => {
-  selectedLead.value = lead;
-  showVerPropiedadForm.value = true;
+const guardarVisitaBD = (datos: any) => {
+  dbVisitas.value.push({ id: Date.now(), ...datos });
+  showVisitaForm.value = false;
 };
 
 const abrirEditarVisitaForm = (lead: any) => {
   selectedLead.value = lead;
-  showEditarVisitaForm.value = true;
+  const visita = dbVisitas.value.find((v) => v.leadId === lead.id);
+  if (visita) {
+    selectedVisita.value = visita;
+    showEditarVisitaForm.value = true;
+  } else {
+    alert("No hay visita programada.");
+  }
+};
+
+const actualizarVisitaBD = (datos: any) => {
+  const index = dbVisitas.value.findIndex((v) => v.id === datos.id);
+  if (index !== -1) dbVisitas.value[index] = datos;
+  showEditarVisitaForm.value = false;
 };
 
 const abrirVerVisitaForm = (lead: any) => {
   selectedLead.value = lead;
-  showVerVisitaForm.value = true;
+  const visitaDelLead = dbVisitas.value.filter((v) => v.leadId === lead.id);
+  if (visitaDelLead.length > 0) {
+    visitasDelLead.value = visitaDelLead;
+    selectedVisita.value = visitaDelLead[0];
+    showVerVisitaForm.value = true;
+  } else {
+    alert("No hay visita registrada.");
+  }
 };
 
+// =============================================================================
+// RESTO DE FUNCIONES (MANTENIDAS IGUAL, SOLO PLACEHOLDERS)
+// =============================================================================
+
+const abrirObservacionForm = (lead: any) => {
+  selectedLead.value = lead;
+  showObservacionForm.value = true;
+};
 const abrirEditarObservacionForm = (lead: any) => {
   selectedLead.value = lead;
   showEditarObservacionForm.value = true;
 };
-
 const abrirVerObservacionForm = (lead: any) => {
   selectedLead.value = lead;
   showVerObservacionForm.value = true;
 };
-
 const abrirEditarLeadForm = (lead: any) => {
   selectedLead.value = lead;
   showEditarLeadForm.value = true;
 };
 
-// Datos Generados
+//---------------------------------------------------MOSTRAR MODAL Citas--------------------------------------------------------------------
+
+const showVisitasForm = ref(false);
+const showEditarVisitasForm = ref(false);
+const showVerVisitaAgendadaForm = ref(false);
+
+const showGastosForm = ref(false);
+const showEditarGastosForm = ref(false);
+const showVerGastosForm = ref(false);
+
+const showObservacionGastosForm = ref(false);
+const showEditarObservacionGastosForm = ref(false);
+const showVerObservacionGastosForm = ref(false);
+
+const showEditarLeadCitaForm = ref(false);
+
+//Selector Citas
+const selectedCita = ref<any>(null);
+
+// Función temporal para modales que aun no tienen lógica de BD
+const abrirModalTemporal = (item: any) => {
+  console.log("Abrir modal (temporal)", item);
+};
+
+// Abrir formularios  Citas
+const abrirVisitasForm = (cita: any) => {
+  selectedCita.value = cita;
+  showVisitasForm.value = true;
+};
+const abrirEditarVisitasForm = (cita: any) => {
+  selectedCita.value = cita;
+  showEditarVisitasForm.value = true;
+};
+const abrirVerVisitaAgendadaForm = (cita: any) => {
+  selectedCita.value = cita;
+  showVerVisitaAgendadaForm.value = true;
+};
+
+const abrirGastosForm = (cita: any) => {
+  selectedCita.value = cita;
+  showGastosForm.value = true;
+};
+const abrirEditarGastosForm = (cita: any) => {
+  selectedCita.value = cita;
+  showEditarGastosForm.value = true;
+};
+const abrirVerGastosForm = (cita: any) => {
+  selectedCita.value = cita;
+  showVerGastosForm.value = true;
+};
+
+const abrirObservacionGastosForm = (cita: any) => {
+  selectedCita.value = cita;
+  showObservacionGastosForm.value = true;
+};
+const abrirEditarObservacionGastosForm = (cita: any) => {
+  selectedCita.value = cita;
+  showEditarObservacionGastosForm.value = true;
+};
+
+const abrirVerObservacionGastosForm = (cita: any) => {
+  selectedCita.value = cita;
+  showVerObservacionGastosForm.value = true;
+};
+
+const abrirEditarLeadCitaForm = (cita: any) => {
+  selectedCita.value = cita;
+  showEditarLeadCitaForm.value = true;
+};
+
+//---------------------------------------------------MOSTRAR MODAL CLIENTES--------------------------------------------------------------------
+
+const showVerHistorialForm = ref(false);
+const showVerTerrenosForm = ref(false);
+const showSubirContratoForm = ref(false);
+const showVerComentariosForm = ref(false);
+const showEditarLeadClienteForm = ref(false);
+
+//Selector Clientes
+const selectedCliente = ref<any>(null);
+
+// Abrir formularios Clientes
+const abrirVerHistorialForm = (cliente: any) => {
+  selectedCliente.value = cliente;
+  showVerHistorialForm.value = true;
+};
+const abrirVerTerrenosForm = (cliente: any) => {
+  selectedCliente.value = cliente;
+  showVerTerrenosForm.value = true;
+};
+const abrirSubirContratoForm = (cliente: any) => {
+  selectedCliente.value = cliente;
+  showSubirContratoForm.value = true;
+};
+
+const abrirVerComentariosForm = (cliente: any) => {
+  selectedCliente.value = cliente;
+  showVerComentariosForm.value = true;
+};
+const abrirEditarLeadClienteForm = (cliente: any) => {
+  selectedCliente.value = cliente;
+  showEditarLeadClienteForm.value = true;
+};
+
+//---------------------------------------------------DATOS GENERADOS(Adaptar)--------------------------------------------------------------------
+// Datos Generados leads
 const leads = ref([
   {
     id: 1,
@@ -93,19 +325,61 @@ const leads = ref([
   },
 ]);
 
-// Guardar Lead
+//Datos Generados Citas
+const citas = ref([
+  {
+    id: 1,
+    nombre: "Jose Gonzales Lopez",
+    celular: "999999999",
+    fecha: "23 /24 / 23",
+    tipo: "Propios",
+    Estado: "realizado",
+  },
+]);
+
+//Datos Generados Clientes
+const clientes = ref([
+  {
+    id: 1,
+    nombre: "Jose Vargas Lopez",
+    celular: "888888888",
+    fecha: "23 / 25 / 23",
+    tipo: "Propios",
+    Vendido: "seleccionar",
+  },
+]);
+
+// Guardar Lead ESTADO
 const guardarLead = (leadData: any) => {
   leads.value.push({
     id: leads.value.length + 1,
     estado: "Seguimiento",
     ...leadData,
   });
-
-  showModal.value = false;
 };
 
-// Estados posibles
+// Guardar Cita ESTADO
+const guardarLeadCitas = (leadDataCitas: any) => {
+  citas.value.push({
+    id: citas.value.length + 1,
+    Estado: "realizado",
+    ...leadDataCitas,
+  });
+};
+
+// Guardar Cliente ESTADO
+const guardarLeadClientes = (leadDataClientes: any) => {
+  clientes.value.push({
+    id: clientes.value.length + 1,
+    Vendido: "seleccionar",
+    ...leadDataClientes,
+  });
+};
+
+// ---------------Estados posibles----------------------------
 const estados = ["Seguimiento", "Cierre", "No responde"];
+const estadosCitas = ["realizado", "reprogramo", "cancelo"];
+const vendidoClientes = ["seleccionar", "No", "Si"];
 </script>
 
 <template>
@@ -115,10 +389,11 @@ const estados = ["Seguimiento", "Cierre", "No responde"];
         <button
           @click="setTab('Leads')"
           class="px-4 py-2 rounded-full font-semibold transition-colors duration-150 shadow-md border border-gray-200"
-          :class="{
-            'bg-negro-primario text-white': currentTab === 'Leads',
-            'bg-white text-negro-primario': currentTab !== 'Leads',
-          }"
+          :class="
+            currentTab === 'Leads'
+              ? 'bg-negro-primario text-blanco-primario'
+              : 'bg-blanco-primario text-negro-primario'
+          "
         >
           Leads
         </button>
@@ -126,10 +401,11 @@ const estados = ["Seguimiento", "Cierre", "No responde"];
         <button
           @click="setTab('Citas')"
           class="px-4 py-2 rounded-full font-semibold transition-colors duration-150 shadow-md border border-gray-200"
-          :class="{
-            'bg-negro-primario text-white': currentTab === 'Citas',
-            'bg-white text-negro-primario': currentTab !== 'Citas',
-          }"
+          :class="
+            currentTab === 'Citas'
+              ? 'bg-negro-primario text-blanco-primario'
+              : 'bg-blanco-primario text-negro-primario'
+          "
         >
           Citas
         </button>
@@ -137,488 +413,126 @@ const estados = ["Seguimiento", "Cierre", "No responde"];
         <button
           @click="setTab('Clientes')"
           class="px-4 py-2 rounded-full font-semibold transition-colors duration-150 shadow-md border border-gray-200"
-          :class="{
-            'bg-negro-primario text-white': currentTab === 'Clientes',
-            'bg-white text-negro-primario': currentTab !== 'Clientes',
-          }"
+          :class="
+            currentTab === 'Clientes'
+              ? 'bg-negro-primario text-blanco-primario'
+              : 'bg-blanco-primario text-negro-primario'
+          "
         >
           Clientes
         </button>
       </div>
 
       <button
-        @click="showModal = true"
-        class="px-4 py-2 rounded-full font-semibold shadow-md bg-white text-negro-primario border border-gray-200"
+        @click="showNuevoLeadForm = true"
+        class="px-4 py-2 rounded-full font-semibold shadow-md bg-blanco-primario text-negro-primario border border-gray-200"
       >
         + Agregar Lead
       </button>
     </div>
 
     <div v-if="currentTab === 'Leads'">
-      <div
-        class="rounded-[20px] shadow-xl overflow-hidden border border-gray-200 overflow-x-auto"
-      >
-        <div
-          class="grid grid-cols-12 gap-x-1 py-4 px-4 text-sm font-bold text-gray-600 border-b border-gray-200 bg-[linear-gradient(180deg,#F9F9F9_10%,#EAEAEA_64%)]"
-        >
-          <span class="mr-2">N°</span>
-          <span class="col-span-2 -ml-15">Nombre Completo</span>
-          <span class="-ml-18">Celular</span>
-          <span class="-ml-15">Fecha</span>
-          <span class="-ml-13">Tipo</span>
-          <span class="-ml-14">Propiedad</span>
-          <span class="-ml-7">Visita</span>
-          <span class="-ml-7">Observación</span>
-          <span class="ml-4">Estado</span>
-          <span class="ml-7">Acciones</span>
-          <span class="ml-11">Guardar</span>
-        </div>
-
-        <div class="divide-y divide-gray-100">
-          <div
-            v-for="lead in leads"
-            :key="lead.id"
-            class="grid grid-cols-12 gap-x-4 px-4 text-sm text-gray-800 items-center h-14 bg-[linear-gradient(180deg,#F9F9F9_10%,#EAEAEA_64%)]"
-          >
-            <span>{{ lead.id }}</span>
-            <span class="col-span-2 -ml-16">{{ lead.nombre }}</span>
-            <span class="-ml-22">{{ lead.celular }}</span>
-            <span class="-ml-20">{{ lead.fecha }}</span>
-            <span class="-ml-16">{{ lead.tipo }}</span>
-
-            <span class="flex items-center space-x-1 -ml-18">
-              <button
-                @click="abrirPropiedadForm(lead)"
-                class="bg-black rounded-full flex items-center justify-center w-6 h-6 text-white shrink-0 -ml-1"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  class="w-4 h-4"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M12 4.5v15m7.5-7.5h-15"
-                  />
-                </svg>
-              </button>
-
-              <button
-                @click="abrirEditarPropiedadForm(lead)"
-                class="bg-blanco-primario rounded-full flex items-center justify-center w-6 h-6 text-negro-primario shrink-0 ml-1"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  class="w-5.5 h-5.5"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-                  />
-                </svg>
-              </button>
-
-              <button
-                @click="abrirVerPropiedadForm(lead)"
-                class="bg-blanco-primario rounded-full flex items-center justify-center w-6 h-6 text-negro-primario shrink-0 ml-1"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  class="w-5 h-5"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
-                  />
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                  />
-                </svg>
-              </button>
-            </span>
-
-            <span class="flex items-center space-x-1 -ml-18">
-              <button
-                @click="abrirVisitaForm(lead)"
-                class="bg-black rounded-full flex items-center justify-center w-6 h-6 text-white shrink-0 ml-5"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  class="w-4 h-4"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M12 4.5v15m7.5-7.5h-15"
-                  />
-                </svg>
-              </button>
-
-              <button
-                @click="abrirEditarVisitaForm(lead)"
-                class="bg-blanco-primario rounded-full flex items-center justify-center w-6 h-6 text-negro-primario shrink-0 ml-1"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  class="w-5.5 h-5.5"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-                  />
-                </svg>
-              </button>
-
-              <button
-                @click="abrirVerVisitaForm(lead)"
-                class="bg-blanco-primario rounded-full flex items-center justify-center w-6 h-6 text-negro-primario shrink-0 -ml-0"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  class="w-5 h-5"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
-                  />
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                  />
-                </svg>
-              </button>
-            </span>
-
-            <span class="flex items-center space-x-1 -ml-18">
-              <button
-                @click="abrirObservacionForm(lead)"
-                class="bg-black rounded-full flex items-center justify-center w-6 h-6 text-white shrink-0 ml-9"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  class="w-4 h-4"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M12 4.5v15m7.5-7.5h-15"
-                  />
-                </svg>
-              </button>
-
-              <button
-                @click="abrirEditarObservacionForm(lead)"
-                class="bg-blanco-primario rounded-full fEditarObservacionFormlex items-center justify-center w-6 h-6 text-negro-primario shrink-0 ml-1"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  class="w-5.5 h-5.5"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-                  />
-                </svg>
-              </button>
-
-              <button
-                @click="abrirVerObservacionForm(lead)"
-                class="bg-blanco-primario rounded-full flex items-center justify-center w-6 h-6 text-negro-primario shrink-0 -ml-0"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  class="w-5 h-5"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
-                  />
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                  />
-                </svg>
-              </button>
-            </span>
-
-            <span class="relative">
-              <select
-                v-model="lead.estado"
-                class="border rounded px-2 py-1 text-sm -ml-6 bg-white/50"
-              >
-                <option v-for="e in estados" :key="e" :value="e">
-                  {{ e }}
-                </option>
-              </select>
-            </span>
-
-            <span class="flex space-x-2">
-              <button
-                @click="abrirEditarLeadForm(lead)"
-                class="bg-blanco-primario rounded-full flex items-center justify-center w-6 h-6 text-negro-primario shrink-0 ml-7"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  class="w-5.5 h-5.5"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-                  />
-                </svg>
-              </button>
-
-              <button
-                class="bg-blanco-primario rounded-full flex items-center justify-center w-6 h-6 text-negro-primario shrink-0"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  class="w-5 h-5"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                  />
-                </svg>
-              </button>
-            </span>
-
-            <span>
-              <button
-                class="bg-blanco-primario rounded-full flex items-center justify-center w-6 h-6 text-negro-primario ml-13"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  class="w-5 h-5"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M3 7.5V6a2.25 2.25 0 0 1 2.25-2.25h10.5L21 8v10.5A2.25 2.25 0 0 1 18.75 20.75H5.25A2.25 2.25 0 0 1 3 18.75v-11.25Z"
-                  />
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M16.5 3.75V8.25H7.5V3.75"
-                  />
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M12 12.75v6"
-                  />
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M9 15.75h6"
-                  />
-                </svg>
-              </button>
-            </span>
-          </div>
-        </div>
-      </div>
+      <TablaLead
+        :leads="leads"
+        :estados="estados"
+        @abrir-propiedad="abrirPropiedadForm"
+        @editar-propiedad="abrirEditarPropiedadForm"
+        @ver-propiedad="abrirVerPropiedadForm"
+        @abrir-visita="abrirVisitaForm"
+        @editar-visita="abrirEditarVisitaForm"
+        @ver-visita="abrirVerVisitaForm"
+        @abrir-observacion="abrirObservacionForm"
+        @editar-observacion="abrirEditarObservacionForm"
+        @ver-observacion="abrirVerObservacionForm"
+        @editar-lead="abrirEditarLeadForm"
+        @eliminar-lead="abrirModalTemporal"
+        @guardar-lead="abrirModalTemporal"
+      />
     </div>
 
     <div v-else-if="currentTab === 'Citas'">
-      <div
-        class="rounded-[20px] shadow-xl overflow-hidden border border-gray-200 overflow-x-auto"
-      >
-        <div
-          class="grid grid-cols-10 gap-x-4 py-4 px-4 text-sm font-bold text-gray-600 border-b border-gray-200 bg-[linear-gradient(180deg,#F9F9F9_10%,#EAEAEA_64%)]"
-        >
-          <span>N°</span>
-          <span class="col-span-2">Nombre Completo</span>
-          <span>Celular</span>
-          <span>Visitas</span>
-          <span>Gastos</span>
-          <span>Observaciones</span>
-          <span>Estado</span>
-          <span>Acciones</span>
-          <span>Guardar</span>
-        </div>
-
-        <div class="divide-y divide-gray-100">
-          <div
-            v-for="n in 7"
-            :key="'cita-' + n"
-            class="grid grid-cols-10 gap-x-4 px-4 text-sm text-gray-800 items-center h-14 bg-[linear-gradient(180deg,#F9F9F9_10%,#EAEAEA_64%)]"
-          >
-            <span></span>
-            <span class="col-span-2"></span>
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-        </div>
-      </div>
+      <TablaCitas
+        :citas="citas"
+        :estadosCitas="estadosCitas"
+        @abrir-visitas="abrirVisitasForm"
+        @editar-visitas="abrirEditarVisitasForm"
+        @ver-visita-agendada="abrirVerVisitaAgendadaForm"
+        @abrir-gastos="abrirGastosForm"
+        @editar-gastos="abrirEditarGastosForm"
+        @ver-gastos="abrirVerGastosForm"
+        @abrir-observacion-gastos="abrirObservacionGastosForm"
+        @editar-observacion-gastos="abrirEditarObservacionGastosForm"
+        @ver-observacion-gastos="abrirVerObservacionGastosForm"
+        @editar-lead-cita="abrirEditarLeadCitaForm"
+        @eliminar-lead-cita="abrirModalTemporal"
+        @guardar-lead-cita="abrirModalTemporal"
+      />
     </div>
 
     <div v-else-if="currentTab === 'Clientes'">
-      <div
-        class="rounded-[20px] shadow-xl overflow-hidden border border-gray-200 overflow-x-auto"
-      >
-        <div class="mb-0 p-4 bg-white border-b border-gray-200">
-          <div class="relative w-full max-w-md">
-            <svg
-              class="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-            <input
-              type="text"
-              placeholder="Buscar por nombre, apellido..."
-              class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-        </div>
-
-        <div
-          class="grid grid-cols-11 gap-x-4 py-4 px-4 text-sm font-bold text-gray-600 border-b border-gray-200 bg-[linear-gradient(180deg,#F9F9F9_10%,#EAEAEA_64%)]"
-        >
-          <span class="col-span-2">Nombre Completo</span>
-          <span>Contacto</span>
-          <span>Fecha</span>
-          <span>Tipo</span>
-          <span>Historial</span>
-          <span>Propiedades</span>
-          <span>Contrato</span>
-          <span>Vendido</span>
-          <span>Observaciones</span>
-          <span>Acciones</span>
-        </div>
-
-        <div class="divide-y divide-gray-100">
-          <div
-            v-for="n in 7"
-            :key="'cliente-' + n"
-            class="grid grid-cols-11 gap-x-4 px-4 text-sm text-gray-800 items-center h-14 bg-[linear-gradient(180deg,#F9F9F9_10%,#EAEAEA_64%)]"
-          >
-            <span class="col-span-2"></span>
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-        </div>
-      </div>
+      <TablaClientes
+        :clientes="clientes"
+        :vendidoClientes="vendidoClientes"
+        @abrir-ver-historial="abrirVerHistorialForm"
+        @abrir-ver-terrenos="abrirVerTerrenosForm"
+        @abrir-subir-contrato="abrirSubirContratoForm"
+        @abrir-ver-comentarios="abrirVerComentariosForm"
+        @editar-lead-cliente="abrirEditarLeadClienteForm"
+        @eliminar-lead-cliente="abrirModalTemporal"
+        @guardar-lead-cliente="abrirModalTemporal"
+      />
     </div>
 
     <NuevoLeadForm
-      v-if="showModal"
-      @close="showModal = false"
+      v-if="showNuevoLeadForm"
+      @close="showNuevoLeadForm = false"
       @crear="guardarLead"
     />
 
     <PropiedadForm
       v-if="showPropiedadForm"
       :lead="selectedLead"
+      @crear="guardarPropiedadBD"
       @close="showPropiedadForm = false"
     />
 
     <EditarPropiedadForm
       v-if="showEditarPropiedadForm"
       :lead="selectedLead"
+      :propiedad="selectedPropiedad"
+      :propiedadesDisponibles="propiedadesDelLead"
+      @actualizar="actualizarPropiedadBD"
       @close="showEditarPropiedadForm = false"
     />
 
     <VerPropiedadForm
       v-if="showVerPropiedadForm"
       :lead="selectedLead"
+      :propiedadesDisponibles="propiedadesDelLead"
       @close="showVerPropiedadForm = false"
     />
 
     <VisitaForm
       v-if="showVisitaForm"
       :lead="selectedLead"
+      :propiedadesDisponibles="dbPropiedades"
+      @crear="guardarVisitaBD"
       @close="showVisitaForm = false"
     />
 
     <EditarVisitaForm
       v-if="showEditarVisitaForm"
       :lead="selectedLead"
+      :visita="selectedVisita"
+      :propiedadesDisponibles="dbPropiedades"
+      @actualizar="actualizarVisitaBD"
       @close="showEditarVisitaForm = false"
     />
 
     <VerVisitaForm
       v-if="showVerVisitaForm"
       :lead="selectedLead"
+      :visitasDisponibles="visitasDelLead"
       @close="showVerVisitaForm = false"
     />
 
@@ -627,13 +541,11 @@ const estados = ["Seguimiento", "Cierre", "No responde"];
       :lead="selectedLead"
       @close="showObservacionForm = false"
     />
-
     <EditarObservacionForm
       v-if="showEditarObservacionForm"
       :lead="selectedLead"
       @close="showEditarObservacionForm = false"
     />
-
     <VerObservacionForm
       v-if="showVerObservacionForm"
       :lead="selectedLead"
@@ -644,6 +556,75 @@ const estados = ["Seguimiento", "Cierre", "No responde"];
       v-if="showEditarLeadForm"
       :lead="selectedLead"
       @close="showEditarLeadForm = false"
+    />
+
+    <VisitasForm v-if="showVisitasForm" :cita="selectedCita" @close="showVisitasForm = false" />
+    <EditarVisitasForm
+      v-if="showEditarVisitasForm"
+      :cita="selectedCita"
+      @close="showEditarVisitasForm = false"
+    />
+    <VerVisitaAgendadaForm
+      v-if="showVerVisitaAgendadaForm"
+      :cita="selectedCita"
+      @close="showVerVisitaAgendadaForm = false"
+    />
+    <GastosForm v-if="showGastosForm" :cita="selectedCita" @close="showGastosForm = false" />
+    <EditarGastosForm
+      v-if="showEditarGastosForm"
+      :cita="selectedCita"
+      @close="showEditarGastosForm = false"
+    />
+    <VerGastosForm
+      v-if="showVerGastosForm"
+      :cita="selectedCita"
+      @close="showVerGastosForm = false"
+    />
+    <ObservacionGastosForm
+      v-if="showObservacionGastosForm"
+      :cita="selectedCita"
+      @close="showObservacionGastosForm = false"
+    />
+    <EditarObservacionGastosForm
+      v-if="showEditarObservacionGastosForm"
+      :cita="selectedCita"
+      @close="showEditarObservacionGastosForm = false"
+    />
+    <VerObservacionGastosForm
+      v-if="showVerObservacionGastosForm"
+      :cita="selectedCita"
+      @close="showVerObservacionGastosForm = false"
+    />
+    <EditarLeadCitaForm
+      v-if="showEditarLeadCitaForm"
+      :cita="selectedCita"
+      @close="showEditarLeadCitaForm = false"
+    />
+
+    <VerHistorialForm
+      v-if="showVerHistorialForm"
+      :cita="selectedCliente"
+      @close="showVerHistorialForm = false"
+    />
+    <VerTerrenosForm
+      v-if="showVerTerrenosForm"
+      :cita="selectedCliente"
+      @close="showVerTerrenosForm = false"
+    />
+    <SubirContratoForm
+      v-if="showSubirContratoForm"
+      :cita="selectedCliente"
+      @close="showSubirContratoForm = false"
+    />
+    <VerComentariosForm
+      v-if="showVerComentariosForm"
+      :cita="selectedCliente"
+      @close="showVerComentariosForm = false"
+    />
+    <EditarLeadClienteForm
+      v-if="showEditarLeadClienteForm"
+      :cita="selectedCliente"
+      @close="showEditarLeadClienteForm = false"
     />
   </div>
 </template>

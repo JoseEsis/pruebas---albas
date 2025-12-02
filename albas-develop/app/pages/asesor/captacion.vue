@@ -28,8 +28,8 @@ import VisitasForm from "~/components/asesor/NuevoLeadForm.vue"; //Formulario pa
 import EditarVisitasForm from "~/components/asesor/NuevoLeadForm.vue"; //Formulario para editarVisitas-tablaCitas
 import VerVisitaAgendadaForm from "~/components/asesor/NuevoLeadForm.vue"; //Formulario para VerVisitas-tablaCitas
 import GastosForm from "~/components/asesor/GastosForm.vue"; //Formulario para AgregarGastos-tablaCitas
-import EditarGastosForm from "~/components/asesor/NuevoLeadForm.vue"; //Formulario para EditarGastos-tablaCitas
-import VerGastosForm from "~/components/asesor/NuevoLeadForm.vue"; //Formulario para VerGastos-tablaCitas
+import EditarGastosForm from "~/components/asesor/EditarGastosForm.vue"; //Formulario para EditarGastos-tablaCitas
+import VerGastosForm from "~/components/asesor/VerGastosForm.vue"; //Formulario para VerGastos-tablaCitas
 import ObservacionGastosForm from "~/components/asesor/NuevoLeadForm.vue"; //Formulario para agregarObservacion-tablaCitas
 import EditarObservacionGastosForm from "~/components/asesor/NuevoLeadForm.vue"; //Formulario para EditarObservacion-tablaCitas
 import VerObservacionGastosForm from "~/components/asesor/NuevoLeadForm.vue"; //Formulario para VerObservacion-tablaCitas
